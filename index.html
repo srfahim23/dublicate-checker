@@ -8,7 +8,7 @@
         :root {
             --bg: #0d1117;
             --card: #161b22;
-            --accent: #58a6ff; /* Clean Blue Accent */
+            --accent: #58a6ff;
             --success: #238636;
             --text: #c9d1d9;
             --border: #30363d;
@@ -31,8 +31,27 @@
             border: 1px solid var(--border);
             box-shadow: 0 20px 50px rgba(0,0,0,0.3);
         }
-        h2 { color: #fff; margin-bottom: 10px; font-weight: 600; }
-        p { color: #8b949e; margin-bottom: 25px; }
+        h2 { color: #fff; margin-bottom: 5px; font-weight: 600; }
+        p { color: #8b949e; margin-bottom: 20px; font-size: 14px; }
+
+        /* Style for the new Exclude Input */
+        .exclude-box {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .exclude-box label { font-size: 12px; color: var(--accent); font-weight: bold; text-transform: uppercase; }
+        .exclude-input {
+            background: #010409;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px 15px;
+            color: #fff;
+            outline: none;
+            transition: 0.3s;
+        }
+        .exclude-input:focus { border-color: var(--accent); }
         
         textarea {
             width: 100%;
@@ -76,7 +95,6 @@
 
         .stats { margin-left: auto; color: #8b949e; font-size: 13px; }
         
-        /* Toast Notification */
         #toast {
             visibility: hidden;
             min-width: 200px;
@@ -89,6 +107,8 @@
             z-index: 1;
             bottom: 30px;
             font-weight: bold;
+            left: 50%;
+            transform: translateX(-50%);
         }
         #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
 
@@ -100,15 +120,17 @@
 
 <div class="container">
     <h2>Lead Deduplicator</h2>
-    <p>Paste your bulk list. We'll handle the duplicates instantly.</p>
+    <p>Filter unique leads and exclude your own email address.</p>
     
-    <textarea id="inputData" placeholder="Example:
-info@domain.com
-test@domain.com
-info@domain.com"></textarea>
+    <div class="exclude-box">
+        <label>Your Email (To Remove from List):</label>
+        <input type="email" id="excludeEmail" class="exclude-input" placeholder="e.g. yourname@gmail.com">
+    </div>
+
+    <textarea id="inputData" placeholder="Paste your bulk list here..."></textarea>
     
     <div class="controls">
-        <button class="btn-primary" onclick="processLeads()">1. Filter Unique</button>
+        <button class="btn-primary" onclick="processLeads()">1. Filter & Clean</button>
         <button class="btn-secondary" onclick="copyToClipboard()">2. Copy Results</button>
         <button class="btn-secondary" style="color: #f85149;" onclick="clearAll()">Clear</button>
         
@@ -116,21 +138,31 @@ info@domain.com"></textarea>
     </div>
 </div>
 
-<div id="toast">Copied to Clipboard!</div>
+<div id="toast">Task Completed!</div>
 
 <script>
     function processLeads() {
         const input = document.getElementById('inputData');
         const stats = document.getElementById('stats');
+        const excludeEmail = document.getElementById('excludeEmail').value.trim().toLowerCase();
         
+        // 1. Split into array and clean whitespace
         let rawList = input.value.split(/\r?\n/).map(item => item.trim()).filter(item => item !== "");
+        
+        // 2. Remove Duplicates using Set
         let uniqueList = [...new Set(rawList)];
+        
+        // 3. Exclude your specific email (Interesting change)
+        if (excludeEmail !== "") {
+            uniqueList = uniqueList.filter(email => email.toLowerCase() !== excludeEmail);
+        }
+
         uniqueList.sort();
         
         input.value = uniqueList.join("\n");
         stats.innerText = `Input: ${rawList.length} | Unique: ${uniqueList.length} | Removed: ${rawList.length - uniqueList.length}`;
         
-        showToast("Filtered Successfully!");
+        showToast("Filtered & Excluded Successfully!");
     }
 
     function copyToClipboard() {
@@ -138,7 +170,7 @@ info@domain.com"></textarea>
         if (!copyText.value) return;
 
         copyText.select();
-        copyText.setSelectionRange(0, 99999); // For mobile
+        copyText.setSelectionRange(0, 99999);
         navigator.clipboard.writeText(copyText.value);
         
         showToast("Copied to Clipboard!");
@@ -146,6 +178,7 @@ info@domain.com"></textarea>
 
     function clearAll() {
         document.getElementById('inputData').value = "";
+        document.getElementById('excludeEmail').value = "";
         document.getElementById('stats').innerText = "Input: 0 | Unique: 0";
     }
 
