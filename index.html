@@ -3,209 +3,244 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lead Cleaner Pro | Duo Link Studio</title>
+    <title>Duo Link Studio - Combined Tools</title>
     <style>
-        :root {
-            --bg: #0d1117;
-            --card: #161b22;
-            --accent: #58a6ff;
-            --success: #238636;
-            --text: #c9d1d9;
-            --border: #30363d;
-            --danger: #f85149;
-        }
-        body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            display: flex;
-            justify-content: center;
-            padding: 40px 20px;
+        body, html {
             margin: 0;
-        }
-        .container {
-            width: 100%;
-            max-width: 900px;
-            background: var(--card);
-            padding: 30px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-        }
-        h2 { color: #fff; margin: 0 0 5px 0; font-size: 24px; }
-        .description { color: #8b949e; margin-bottom: 20px; font-size: 14px; }
-        
-        .field-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; color: #fff; font-size: 14px; font-weight: 500; }
-        
-        input[type="text"], textarea {
-            width: 100%;
+            padding: 0;
+            height: 100vh;
             background: #010409;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            color: #79c0ff;
-            padding: 12px;
-            font-family: "SFMono-Regular", Consolas, monospace;
-            box-sizing: border-box;
-            outline: none;
-            transition: 0.3s;
+            overflow: hidden;
+            font-family: sans-serif;
         }
-        input[type="text"]:focus, textarea:focus { border-color: var(--accent); }
-
-        .exclude-box { margin-bottom: 25px; border-left: 3px solid var(--danger); padding-left: 15px; }
-        
-        textarea { height: 200px; resize: vertical; }
-
-        .controls {
+        /* মেনু বার বা ডিভাইডার স্টাইল */
+        .header-bar {
+            height: 40px;
+            background: #161b22;
+            color: #58a6ff;
             display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
             align-items: center;
-            padding-top: 15px;
-            border-top: 1px solid var(--border);
-        }
-        
-        button {
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            border: 1px solid rgba(240,246,252,0.1);
-            transition: 0.2s;
-            font-size: 13px;
-        }
-
-        .btn-primary { background: var(--success); color: #fff; }
-        .btn-primary:hover { background: #2ea043; }
-
-        .btn-secondary { background: #21262d; color: #c9d1d9; }
-        .btn-secondary:hover { background: #30363d; }
-
-        .stats { margin-left: auto; color: #8b949e; font-size: 13px; text-align: right; line-height: 1.4; }
-        
-        #toast {
-            visibility: hidden;
-            min-width: 200px;
-            background-color: var(--accent);
-            color: #000;
-            text-align: center;
-            border-radius: 6px;
-            padding: 12px;
-            position: fixed;
-            bottom: 30px;
+            justify-content: center;
             font-weight: bold;
-            z-index: 100;
+            border-bottom: 1px solid #30363d;
+            font-size: 14px;
         }
-        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
-
-        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
-        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+        .main-container {
+            display: flex;
+            width: 100%;
+            height: calc(100vh - 40px); /* ফুল স্ক্রিন থেকে হেডার বাদ */
+        }
+        .app-section {
+            flex: 1;
+            border: none;
+            height: 100%;
+        }
+        .vertical-divider {
+            width: 3px;
+            background: #30363d;
+            cursor: col-resize;
+        }
+        /* মোবাইল ভিউ এর জন্য */
+        @media (max-width: 900px) {
+            .main-container {
+                flex-direction: column;
+                overflow-y: auto;
+            }
+            .app-section {
+                height: 500px; /* মোবাইলে ফিক্সড হাইট */
+                flex: none;
+            }
+            .vertical-divider {
+                height: 3px;
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Lead Cleaner & Junk Remover</h2>
-    <p class="description">Removes duplicates, fixes www. prefix, strips .read junk, and filters blacklist.</p>
-    
-    <div class="field-group exclude-box">
-        <label for="excludeList">Exclude these Emails (Your email or others):</label>
-        <input type="text" id="excludeList" placeholder="e.g. myname@gmail.com, info@company.com">
-    </div>
-
-    <div class="field-group">
-        <label for="inputData">Bulk Lead List:</label>
-        <textarea id="inputData" placeholder="Paste your messy list here..."></textarea>
-    </div>
-    
-    <div class="controls">
-        <button class="btn-primary" onclick="processLeads()">Clean & Validate List</button>
-        <button class="btn-secondary" onclick="copyToClipboard()">Copy Result</button>
-        <button class="btn-secondary" style="color: var(--danger);" onclick="clearAll()">Clear All</button>
-        
-        <div class="stats" id="stats">
-            Input: 0 | Unique: 0<br>
-            <span id="removedCount" style="color: #f85149;">Removed: 0</span>
-        </div>
-    </div>
+<div class="header-bar">
+    Duo Link Studio | Lead Cleaner Pro & Query Generator Pro
 </div>
 
-<div id="toast">Message</div>
+<div class="main-container">
+    <iframe class="app-section" id="leadCleanerFrame"></iframe>
+
+    <div class="vertical-divider"></div>
+
+    <iframe class="app-section" id="queryGenFrame"></iframe>
+</div>
 
 <script>
-    function processLeads() {
-        const inputField = document.getElementById('inputData');
-        const excludeField = document.getElementById('excludeList');
-        const stats = document.getElementById('stats');
-        
-        let rawText = inputField.value;
-        if (!rawText.trim()) {
-            showToast("Please paste some data!");
-            return;
-        }
-
-        // ব্ল্যাকলিস্ট প্রসেস করা
-        let excludeArray = excludeField.value.split(/[,|\n]/)
-            .map(e => e.trim().toLowerCase())
-            .filter(e => e !== "");
-
-        let lines = rawText.split(/\r?\n/);
-        let totalInputCount = lines.length;
-        
-        let cleanedList = [];
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
-        lines.forEach(line => {
-            let item = line.trim().toLowerCase();
-
-            // ১. .read বা পিরিয়ড জঞ্জাল মোছা
-            item = item.replace(/\.read$|\.read\.$|\.\.\.$/g, "");
-            
-            // ২. ইমেলের শুরুতে থাকা www. মোছা (যেমন: www.test@gmail.com -> test@gmail.com)
-            item = item.replace(/^www\./g, "");
-
-            // ৩. ইমেলের আগে-পিছে থাকা অপ্রয়োজনীয় ডট বা হাইফেন মোছা
-            item = item.replace(/^[.\-_]+|[.\-_]+$/g, "");
-
-            // ৪. ভ্যালিডেশন এবং এক্সক্লুড চেক
-            if (emailRegex.test(item)) {
-                if (!excludeArray.includes(item)) {
-                    cleanedList.push(item);
+    // --- প্রথম অ্যাপের কোড (Lead Cleaner Pro) ---
+    const app1Code = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                :root { --bg: #0d1117; --card: #161b22; --accent: #58a6ff; --success: #238636; --text: #c9d1d9; --border: #30363d; --danger: #f85149; }
+                body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; display: flex; justify-content: center; padding: 20px; margin: 0; }
+                .container { width: 100%; max-width: 900px; background: var(--card); padding: 25px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+                h2 { color: #fff; margin: 0 0 5px 0; font-size: 22px; }
+                .description { color: #8b949e; margin-bottom: 20px; font-size: 13px; }
+                .field-group { margin-bottom: 15px; }
+                label { display: block; margin-bottom: 8px; color: #fff; font-size: 14px; font-weight: 500; }
+                input[type="text"], textarea { width: 100%; background: #010409; border: 1px solid var(--border); border-radius: 6px; color: #79c0ff; padding: 12px; font-family: "SFMono-Regular", Consolas, monospace; box-sizing: border-box; outline: none; transition: 0.3s; }
+                input[type="text"]:focus, textarea:focus { border-color: var(--accent); }
+                .exclude-box { margin-bottom: 20px; border-left: 3px solid var(--danger); padding-left: 15px; }
+                textarea { height: 180px; resize: vertical; }
+                .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding-top: 15px; border-top: 1px solid var(--border); }
+                button { padding: 10px 15px; border-radius: 6px; font-weight: 600; cursor: pointer; border: 1px solid rgba(240,246,252,0.1); transition: 0.2s; font-size: 12px; }
+                .btn-primary { background: var(--success); color: #fff; }
+                .btn-secondary { background: #21262d; color: #c9d1d9; }
+                .stats { margin-left: auto; color: #8b949e; font-size: 12px; text-align: right; line-height: 1.4; }
+                #toast { visibility: hidden; min-width: 180px; background-color: var(--accent); color: #000; text-align: center; border-radius: 6px; padding: 10px; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); font-weight: bold; z-index: 100; font-size: 13px; }
+                #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+                @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 20px; opacity: 1;} }
+                @keyframes fadeout { from {bottom: 20px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h2>Lead Cleaner & Junk Remover</h2>
+                <p class="description">Removes duplicates, fixes www. prefix, strips .read junk, and filters blacklist.</p>
+                <div class="field-group exclude-box">
+                    <label for="excludeList">Exclude these Emails:</label>
+                    <input type="text" id="excludeList" placeholder="e.g. myname@gmail.com, info@company.com">
+                </div>
+                <div class="field-group">
+                    <label for="inputData">Bulk Lead List:</label>
+                    <textarea id="inputData" placeholder="Paste your messy list here..."></textarea>
+                </div>
+                <div class="controls">
+                    <button class="btn-primary" onclick="processLeads()">Clean & Validate List</button>
+                    <button class="btn-secondary" onclick="copyToClipboard()">Copy Result</button>
+                    <button class="btn-secondary" style="color: var(--danger);" onclick="clearAll()">Clear All</button>
+                    <div class="stats" id="stats">Input: 0 | Unique: 0<br><span id="removedCount" style="color: #f85149;">Removed: 0</span></div>
+                </div>
+            </div>
+            <div id="toast">Message</div>
+            <script>
+                function processLeads() {
+                    const inputField = document.getElementById('inputData');
+                    const excludeField = document.getElementById('excludeList');
+                    const stats = document.getElementById('stats');
+                    let rawText = inputField.value;
+                    if (!rawText.trim()) { showToast("Please paste some data!"); return; }
+                    let excludeArray = excludeField.value.split(/[,|\\n]/).map(e => e.trim().toLowerCase()).filter(e => e !== "");
+                    let lines = rawText.split(/\\r?\\n/);
+                    let totalInputCount = lines.length;
+                    let cleanedList = [];
+                    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/;
+                    lines.forEach(line => {
+                        let item = line.trim().toLowerCase();
+                        item = item.replace(/\\.read$|\\.read\\.$|\\.\\.\\.$/g, "");
+                        item = item.replace(/^www\\./g, "");
+                        item = item.replace(/^[.\\-_]+|[.\\-_]+$/g, "");
+                        if (emailRegex.test(item)) { if (!excludeArray.includes(item)) { cleanedList.push(item); } }
+                    });
+                    let uniqueList = [...new Set(cleanedList)];
+                    uniqueList.sort();
+                    inputField.value = uniqueList.join("\\n");
+                    let totalRemoved = totalInputCount - uniqueList.length;
+                    stats.innerHTML = \`Input: \${totalInputCount} | Unique: \${uniqueList.length}<br><span style="color: #f85149;">Removed: \${totalRemoved}</span>\`;
+                    showToast("Junk removed & List cleaned!");
                 }
-            }
-        });
+                function copyToClipboard() {
+                    const copyText = document.getElementById("inputData");
+                    if (!copyText.value) return;
+                    navigator.clipboard.writeText(copyText.value);
+                    showToast("Copied to Clipboard!");
+                }
+                function clearAll() { if(confirm("Clear everything?")) { document.getElementById('inputData').value = ""; document.getElementById('stats').innerHTML = "Input: 0 | Unique: 0<br><span style='color: #f85149;'>Removed: 0</span>"; } }
+                function showToast(msg) { const x = document.getElementById("toast"); x.innerText = msg; x.className = "show"; setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000); }
+            <\/script>
+        </body>
+        </html>
+    `;
 
-        let uniqueList = [...new Set(cleanedList)];
-        uniqueList.sort();
-        
-        inputField.value = uniqueList.join("\n");
-        
-        let totalRemoved = totalInputCount - uniqueList.length;
-        stats.innerHTML = `Input: ${totalInputCount} | Unique: ${uniqueList.length}<br><span style="color: #f85149;">Removed: ${totalRemoved}</span>`;
-        
-        showToast("Junk removed & List cleaned!");
-    }
+    // --- দ্বিতীয় অ্যাপের কোড (Query Generator Pro) ---
+    const app2Code = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                body { font-family: Arial; background:#0d1117; color:#fff; padding:20px; margin:0; }
+                input { width:100%; padding:10px; margin-bottom:10px; background:#161b22; color:#fff; border:1px solid #30363d; box-sizing: border-box; }
+                button { padding:10px 15px; margin:5px; cursor:pointer; background:#21262d; color:#fff; border:1px solid #30363d; border-radius: 4px; }
+                table { width:100%; border-collapse: collapse; margin-top:20px; font-size: 13px; }
+                th, td { border:1px solid #30363d; padding:10px; text-align:left; }
+                th { background:#161b22; }
+                .copy-btn { background:#238636; color:#fff; border:none; }
+                tr.copied { background:#1f6feb33; transition:0.3s; }
+            </style>
+        </head>
+        <body>
+            <h2>Query Generator Pro</h2>
+            <p style="font-size: 14px; color: #8b949e;">Only enter city — professions are preloaded.</p>
+            <input type="text" id="city" placeholder="e.g. california">
+            <button onclick="generate()" style="background:#238636;">Generate Queries</button>
+            <button onclick="resetAll()">Reset Memory</button>
+            <table id="resultTable">
+                <thead><tr><th>#</th><th>Query</th><th>Action</th></tr></thead>
+                <tbody></tbody>
+            </table>
+            <script>
+                const professions = ["Manager","Assistant Manager","General Manager","Operations Manager","Project Manager","Product Manager","HR Manager","Marketing Manager","Sales Manager","Finance Manager","Business Manager","Account Manager","Office Manager","Store Manager","Branch Manager","Program Manager","Team Leader","Supervisor","Executive","CEO","Chief Executive Officer","COO","Chief Operating Officer","CFO","Chief Financial Officer","CTO","Chief Technology Officer","Director","Managing Director","Entrepreneur","Founder","Co-Founder","Software Engineer","Frontend Developer","Backend Developer","Full Stack Developer","Web Developer","Mobile App Developer","Game Developer","Programmer","System Analyst","IT Specialist","DevOps Engineer","Data Analyst","Data Scientist","Database Administrator","Network Engineer","Cybersecurity Specialist","UI/UX Designer","Graphic Designer","Digital Marketer","SEO Specialist","Content Writer","Copywriter","Social Media Manager","Sales Executive","Sales Representative","Business Analyst","Financial Analyst","Accountant","Auditor","Banker","Customer Service Representative","Call Center Agent","Recruiter","HR Specialist","Teacher","Professor","Lecturer","Student","Researcher","Doctor","Nurse","Pharmacist","Dentist","Surgeon","Physician","Electrician","Mechanic","Carpenter","Plumber","Construction Worker","Architect","Civil Engineer","Driver","Truck Driver","Delivery Driver","Chef","Cook","Waiter","Security Guard","Cleaner","Receptionist","Office Assistant","Clerk","Lawyer","Police Officer","Pilot","Air Hostess","Journalist","Photographer"];
+                function getCityKey(city){ return "queries_" + city.toLowerCase(); }
+                function getCopiedSet(city){ const key = getCityKey(city); return new Set(JSON.parse(localStorage.getItem(key) || "[]")); }
+                function saveCopiedSet(city, set){ const key = getCityKey(city); localStorage.setItem(key, JSON.stringify([...set])); }
+                function generate() {
+                    const city = document.getElementById('city').value.trim();
+                    const tbody = document.querySelector('#resultTable tbody');
+                    if(!city) return alert("Enter city first");
+                    tbody.innerHTML = "";
+                    const emailPart = '"@gmail.com" "@hotmail.com" "@aol.com" "@outlook.com" "yahoo.com"';
+                    const copied = getCopiedSet(city);
+                    professions.forEach((prof, index) => {
+                        const query = \`"\${city}" "\${prof}" \${emailPart}\`;
+                        const row = document.createElement('tr');
+                        if(copied.has(query)) row.classList.add('copied');
+                        row.innerHTML = \`<td>\${index + 1}</td><td>\${query}</td><td><button class="copy-btn" onclick="copyText(this)">Copy</button></td>\`;
+                        tbody.appendChild(row);
+                    });
+                }
+                function copyText(btn) {
+                    const row = btn.closest('tr');
+                    const city = document.getElementById('city').value.trim();
+                    const text = row.children[1].innerText;
+                    navigator.clipboard.writeText(text);
+                    let set = getCopiedSet(city);
+                    set.add(text);
+                    saveCopiedSet(city, set);
+                    row.classList.add('copied');
+                    btn.innerText = "Copied!";
+                    setTimeout(()=> btn.innerText = "Copy", 1200);
+                }
+                function resetAll(){
+                    const city = document.getElementById('city').value.trim();
+                    if(!city) return;
+                    localStorage.removeItem(getCityKey(city));
+                    document.querySelectorAll('tr.copied').forEach(r => r.classList.remove('copied'));
+                    alert("Memory reset for this city");
+                }
+            <\/script>
+        </body>
+        </html>
+    `;
 
-    function copyToClipboard() {
-        const copyText = document.getElementById("inputData");
-        if (!copyText.value) return;
-        navigator.clipboard.writeText(copyText.value);
-        showToast("Copied to Clipboard!");
-    }
+    // অ্যাপগুলো ইনজেক্ট করা হচ্ছে
+    const frame1 = document.getElementById('leadCleanerFrame').contentWindow.document;
+    frame1.open();
+    frame1.write(app1Code);
+    frame1.close();
 
-    function clearAll() {
-        if(confirm("Clear everything?")) {
-            document.getElementById('inputData').value = "";
-            document.getElementById('stats').innerHTML = "Input: 0 | Unique: 0<br><span style='color: #f85149;'>Removed: 0</span>";
-        }
-    }
-
-    function showToast(msg) {
-        const x = document.getElementById("toast");
-        x.innerText = msg;
-        x.className = "show";
-        setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
-    }
+    const frame2 = document.getElementById('queryGenFrame').contentWindow.document;
+    frame2.open();
+    frame2.write(app2Code);
+    frame2.close();
 </script>
 
 </body>
