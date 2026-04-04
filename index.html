@@ -13,7 +13,6 @@
             overflow: hidden;
             font-family: sans-serif;
         }
-        /* মেনু বার বা ডিভাইডার স্টাইল */
         .header-bar {
             height: 40px;
             background: #161b22;
@@ -28,7 +27,7 @@
         .main-container {
             display: flex;
             width: 100%;
-            height: calc(100vh - 40px); /* ফুল স্ক্রিন থেকে হেডার বাদ */
+            height: calc(100vh - 40px);
         }
         .app-section {
             flex: 1;
@@ -40,14 +39,13 @@
             background: #30363d;
             cursor: col-resize;
         }
-        /* মোবাইল ভিউ এর জন্য */
         @media (max-width: 900px) {
             .main-container {
                 flex-direction: column;
                 overflow-y: auto;
             }
             .app-section {
-                height: 500px; /* মোবাইলে ফিক্সড হাইট */
+                height: 500px;
                 flex: none;
             }
             .vertical-divider {
@@ -65,9 +63,7 @@
 
 <div class="main-container">
     <iframe class="app-section" id="leadCleanerFrame"></iframe>
-
     <div class="vertical-divider"></div>
-
     <iframe class="app-section" id="queryGenFrame"></iframe>
 </div>
 
@@ -160,7 +156,7 @@
         </html>
     `;
 
-    // --- দ্বিতীয় অ্যাপের কোড (Query Generator Pro) ---
+    // --- দ্বিতীয় অ্যাপের কোড (Query Generator Pro) ---
     const app2Code = `
         <!DOCTYPE html>
         <html lang="en">
@@ -173,7 +169,9 @@
                 table { width:100%; border-collapse: collapse; margin-top:20px; font-size: 13px; }
                 th, td { border:1px solid #30363d; padding:10px; text-align:left; }
                 th { background:#161b22; }
+                .action-btns { display: flex; gap: 5px; }
                 .copy-btn { background:#238636; color:#fff; border:none; }
+                .search-btn { background:#58a6ff; color:#000; border:none; font-weight: bold; }
                 tr.copied { background:#1f6feb33; transition:0.3s; }
             </style>
         </head>
@@ -192,6 +190,7 @@
                 function getCityKey(city){ return "queries_" + city.toLowerCase(); }
                 function getCopiedSet(city){ const key = getCityKey(city); return new Set(JSON.parse(localStorage.getItem(key) || "[]")); }
                 function saveCopiedSet(city, set){ const key = getCityKey(city); localStorage.setItem(key, JSON.stringify([...set])); }
+                
                 function generate() {
                     const city = document.getElementById('city').value.trim();
                     const tbody = document.querySelector('#resultTable tbody');
@@ -203,10 +202,17 @@
                         const query = \`"\${city}" "\${prof}" \${emailPart}\`;
                         const row = document.createElement('tr');
                         if(copied.has(query)) row.classList.add('copied');
-                        row.innerHTML = \`<td>\${index + 1}</td><td>\${query}</td><td><button class="copy-btn" onclick="copyText(this)">Copy</button></td>\`;
+                        row.innerHTML = \`
+                            <td>\${index + 1}</td>
+                            <td>\${query}</td>
+                            <td class="action-btns">
+                                <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                                <button class="search-btn" onclick="searchGoogle(this)">Go</button>
+                            </td>\`;
                         tbody.appendChild(row);
                     });
                 }
+
                 function copyText(btn) {
                     const row = btn.closest('tr');
                     const city = document.getElementById('city').value.trim();
@@ -219,6 +225,22 @@
                     btn.innerText = "Copied!";
                     setTimeout(()=> btn.innerText = "Copy", 1200);
                 }
+
+                function searchGoogle(btn) {
+                    const row = btn.closest('tr');
+                    const query = row.children[1].innerText;
+                    // Copy to clipboard first
+                    navigator.clipboard.writeText(query);
+                    // Open Google Search in New Tab
+                    window.open("https://www.google.com/search?q=" + encodeURIComponent(query), "_blank");
+                    // Highlight as copied
+                    const city = document.getElementById('city').value.trim();
+                    let set = getCopiedSet(city);
+                    set.add(query);
+                    saveCopiedSet(city, set);
+                    row.classList.add('copied');
+                }
+
                 function resetAll(){
                     const city = document.getElementById('city').value.trim();
                     if(!city) return;
@@ -231,7 +253,6 @@
         </html>
     `;
 
-    // অ্যাপগুলো ইনজেক্ট করা হচ্ছে
     const frame1 = document.getElementById('leadCleanerFrame').contentWindow.document;
     frame1.open();
     frame1.write(app1Code);
